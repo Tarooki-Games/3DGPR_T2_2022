@@ -112,6 +112,7 @@ public class PP_Base : MonoBehaviour
         }
     }
 
+    // Way too expensive
     protected Texture2D Apply9x9Kernel(Texture2D source, float[,] kernel)
     {
         _modifiedTexture = new Texture2D(_textureWidth, _textureHeight);
