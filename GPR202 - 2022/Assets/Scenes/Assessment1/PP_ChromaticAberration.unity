@@ -216,10 +216,9 @@ GameObject:
   m_Component:
   - component: {fileID: 309812156}
   - component: {fileID: 309812155}
-  - component: {fileID: 309812154}
   - component: {fileID: 309812153}
   m_Layer: 0
-  m_Name: Clay_JK_Script
+  m_Name: JK_Script
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -237,24 +236,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e633b178bacea624fad957d044f98edd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &309812154
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 309812152}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 01df9c2f4c042bb4fafc5a890e51ded4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _rOffset: {x: 0, y: 0}
-  _gOffset: {x: 0, y: 0}
-  _bOffset: {x: 0, y: 0}
-  _allowance: 50
-  _frequency: 3
-  _intensity: 0.125
 --- !u!212 &309812155
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -351,6 +332,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01df9c2f4c042bb4fafc5a890e51ded4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _isGlow: 0
+  _isDebug: 0
+  _nRows: 3
   _rOffset: {x: 8, y: 4}
   _gOffset: {x: 12, y: 12}
   _bOffset: {x: 4, y: 8}
@@ -406,7 +390,7 @@ SpriteRenderer:
   m_Size: {x: 18.45, y: 5.12}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!4 &532064887
@@ -435,7 +419,7 @@ GameObject:
   - component: {fileID: 1055237965}
   - component: {fileID: 1055237964}
   m_Layer: 0
-  m_Name: Clay _TT_Script
+  m_Name: TT_Script
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -453,9 +437,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01df9c2f4c042bb4fafc5a890e51ded4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rOffset: {x: -20, y: 4}
-  _gOffset: {x: 12, y: 12}
-  _bOffset: {x: 4, y: -20}
+  _isGlow: 0
+  _isDebug: 0
+  _nRows: 3
+  _rOffset: {x: -10, y: 4}
+  _gOffset: {x: 7, y: 7}
+  _bOffset: {x: 4, y: -10}
   _allowance: 0
   _frequency: 1
   _intensity: 1

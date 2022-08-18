@@ -11,9 +11,12 @@ public class PP_Blur : PP_Base
     [SerializeField] TMP_Text _sharpValTMP;
     [SerializeField] Slider _ridgeSlider;
     [SerializeField] TMP_Text _ridgeValTMP;
+    [SerializeField] Slider _boxBlurSlider;
+    [SerializeField] TMP_Text _boxBlurValTMP;
 
     [SerializeField] bool _isSharpen = false;
-    [SerializeField] private bool _isRidge;
+    [SerializeField] bool _isRidge = false;
+    [SerializeField] bool _isBoxBlur = false;
 
     protected override void Awake()
     {
@@ -32,6 +35,11 @@ public class PP_Blur : PP_Base
                 _ridgeSlider = s;
                 _ridgeValTMP = s.GetComponentInChildren<TMP_Text>();
             }
+            else if (s.name == "BoxBlurSlider")
+            {
+                _boxBlurSlider = s;
+                _boxBlurValTMP = s.GetComponentInChildren<TMP_Text>();
+            }
         }
     }
 
@@ -42,12 +50,17 @@ public class PP_Blur : PP_Base
         //Adds a listener to the main slider and invokes a method when the value changes.
         _sharpnessSlider.onValueChanged.AddListener(delegate { UpdateSprite(); });
         _ridgeSlider.onValueChanged.AddListener(delegate { UpdateSprite(); });
+        _boxBlurSlider.onValueChanged.AddListener(delegate { UpdateSprite(); });
     }
 
     float[,] GetKernel(string effect)
     {
         if (effect == "BOX_BLUR")
+        {
+            _isBoxBlur = true;
+            _boxBlurValTMP.SetText($"{_boxBlurSlider.value}");
             return _boxBlurKernel;
+        }
         else if (effect == "GAUSSIAN_BLUR")
             return _gaussianBlurKernel;
         else if (effect == "SHARPEN")
@@ -75,6 +88,12 @@ public class PP_Blur : PP_Base
         if (_isRidge)
         {
             _renderer.sprite = Sprite.Create(ApplyKernel(_sourceTexture, GetKernel("RIDGE")), _sourceSprite.rect, new Vector2(0.5f, 0.5f));
+        }
+        if (_isBoxBlur)
+        {
+            _boxBlurValTMP.SetText($"{_boxBlurSlider.value}");
+            _nRows = (int)_boxBlurSlider.value;
+            _renderer.sprite = Sprite.Create(GetKernelBlurSprite(), _sourceSprite.rect, new Vector2(0.5f, 0.5f));
         }
     }
 

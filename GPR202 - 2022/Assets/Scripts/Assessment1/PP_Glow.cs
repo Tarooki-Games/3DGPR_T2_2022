@@ -29,7 +29,7 @@ public class PP_Glow : PP_Base
     [SerializeField] float _frequency = 3.0f;
     [SerializeField] float _intensity = 0.125f;
 
-    [SerializeField] bool IsBlue { get => _waveFormula >= 0; }
+    bool IsBlue { get => _waveFormula >= 0; }
 
     protected override void Awake()
     {

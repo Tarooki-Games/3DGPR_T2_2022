@@ -38,7 +38,51 @@ public class PP_Base : MonoBehaviour
     [SerializeField] bool _isDebug = false;
 
     // Could I just use this value? ...as running through a kernel is pointless when all float values in the kernel are the same
-    float _blurValue9x9 = 1.0f / 81;
+    // float _blurValue9x9 = 1.0f / 81;
+
+    [SerializeField] [Range(3, 9)] protected int _nRows = 3; // This is the number of rows the kernel will have. Same as columns for n * n kernel.
+    int _previousFrameKernelWidth = 3;
+
+    protected Texture2D GetKernelBlurSprite()
+    {
+        // Checks to avoid updating the blur texture if it is unecessary:
+        // _nRows must be an odd number as it references all surrounding pixels from the pixel in memory.
+        if (_nRows % 2 == 0) return _modifiedTexture; // if this means the number is even, then return.
+        if (_nRows == _previousFrameKernelWidth) return _modifiedTexture; // only moves past this point if the _nRows value changes. 
+
+        // Re-generate and update the _renderer.sprite
+        for (int y = 0; y < _textureHeight; ++y)
+        {
+            for (int x = 0; x < _textureWidth; ++x)
+            {
+                int yBottomRow = y - ((_nRows - 1) / 2);
+                int yTopRow = y + ((_nRows - 1) / 2);
+
+                int xLeftColumn = x - ((_nRows - 1) / 2);
+                int xRightColumn = x + ((_nRows - 1) / 2);
+
+                int samples = 0;           // number of pixels sampled in the kernel
+                Color sampleAdded = new Color(); // add all pixels in the kernel here
+                for (int yOffset = yBottomRow; yOffset <= yTopRow; ++yOffset)
+                {
+                    for (int xOffset = xLeftColumn; xOffset <= xRightColumn; ++xOffset)
+                    {
+                        Color sample = _sourceTexture.GetPixel(xOffset, yOffset);
+                        sampleAdded += sample;
+                        samples += 1;
+                    }
+                }
+
+                Color averaged = sampleAdded / samples;
+                _modifiedTexture.SetPixel(x, y, averaged);
+            }
+        }
+        _previousFrameKernelWidth = _nRows;
+
+        _modifiedTexture.Apply();
+
+        return _modifiedTexture;
+    }
 
     protected virtual void Awake()
     {

@@ -25,7 +25,7 @@ public class PostProcessing : PP_Base
     int _bufferRange = 10;
     int _startingBufferRange;
     
-    float _limitEnd = 10;
+    readonly float _limitEnd = 10;
     
     [SerializeField] float _amplitude = 10;
     [SerializeField] float _frequency = 1;

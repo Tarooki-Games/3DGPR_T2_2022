@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class ChromaticAbberationWithJack : MonoBehaviour
 {
-    SpriteRenderer renderer;
+    SpriteRenderer _renderer;
     Sprite sourceSprite;
     Texture2D sourceTexture;
     //Texture2D mutatedTexture;
     private void Start()
     {
-        renderer = GetComponent<SpriteRenderer>();
-        sourceSprite = renderer.sprite;
+        _renderer = GetComponent<SpriteRenderer>();
+        sourceSprite = _renderer.sprite;
         sourceTexture = sourceSprite.texture;
         
     }
@@ -57,6 +57,6 @@ public class ChromaticAbberationWithJack : MonoBehaviour
         combinedTexture.Apply();
 
         Sprite newSprite = Sprite.Create(combinedTexture, sourceSprite.rect, new Vector2(0.5f, 0.5f));
-        renderer.sprite = newSprite;
+        _renderer.sprite = newSprite;
     }
 }
