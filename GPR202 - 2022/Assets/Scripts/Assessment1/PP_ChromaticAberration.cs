@@ -6,7 +6,7 @@ public class PP_ChromaticAberration : PP_Base
     [SerializeField] Vector2Int _gOffset;
     [SerializeField] Vector2Int _bOffset;
 
-    [SerializeField] int _allowance = 50;
+    // [SerializeField] int _allowance = 50;
 
     [SerializeField] float _frequency = 3.0f;
     [SerializeField] float _intensity = 0.125f;

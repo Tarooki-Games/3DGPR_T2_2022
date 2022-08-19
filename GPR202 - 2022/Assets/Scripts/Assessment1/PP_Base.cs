@@ -35,7 +35,7 @@ public class PP_Base : MonoBehaviour
     protected float[,] _9x9BoxBlur = new float[9, 9];
 
     [SerializeField] bool _isGlow = false;
-    [SerializeField] bool _isDebug = false;
+    // [SerializeField] bool _isDebug = false;
 
     // Could I just use this value? ...as running through a kernel is pointless when all float values in the kernel are the same
     // float _blurValue9x9 = 1.0f / 81;
@@ -164,8 +164,6 @@ public class PP_Base : MonoBehaviour
             for (int x = 0; x < _textureWidth; x++)
             {
                 Color pixel = source.GetPixel(x, y);
-
-                // TO DO: Research Convolution Kernels
 
                 // Row Above current pixel (top)
                 // Fixed mistake from tutorial class top y value should be y + 1 not y - 1
