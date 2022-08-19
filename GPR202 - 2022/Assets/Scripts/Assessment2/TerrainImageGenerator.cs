@@ -23,6 +23,8 @@ public class TerrainImageGenerator : TerrainGenerator_Base
 
     [SerializeField] int _seed = 42069;
     [SerializeField] bool _clean;
+    [SerializeField] bool _isBlurry;
+    [SerializeField][Range(3.0f, 9.0f)] float  _blurStrength = 3;
 
     float Noise(int x, int y, int layer, int seed)
     {
@@ -83,13 +85,32 @@ public class TerrainImageGenerator : TerrainGenerator_Base
 
         GenerateBasicZones();
 
-        // RemoveDiagonalSingleCellZones();
-
         Sprite terrainSprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
         _renderer.sprite = terrainSprite;
 
+        if (_clean)
+        {
+            RemoveDiagonalSingleCellZones();
+
+            terrainSprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
+            _renderer.sprite = terrainSprite;
+        }
+
+        if (_isBlurry)
+        {
+            BlurTerrain((int)_blurStrength);
+
+            terrainSprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
+            _renderer.sprite = terrainSprite;
+        }
+
         // Note: if file exists at path, it will overwrite.
         _ = AssetCreator.CreateTexture2D(_modifiedTexture, $"{_folderPath}{_fileName}.bmp", _filter, _readable, _format);
+    }
+
+    private void BlurTerrain(object blurStrength)
+    {
+        throw new System.NotImplementedException();
     }
 
     void GenerateBasicZones()
@@ -151,6 +172,51 @@ public class TerrainImageGenerator : TerrainGenerator_Base
                     continue;
 
                 _modifiedTexture.SetPixel(x, y, l);
+            }
+        }
+        _modifiedTexture.Apply();
+    }
+
+    void BlurTerrain(int kernelWidth)
+    {
+        if (kernelWidth % 2 == 0) return; // this means the number is event, ignore.
+
+        Texture2D blurTexture = new Texture2D(_textureWidth, _textureHeight);
+
+        // Re-generate
+        for (int y = 0; y < _textureHeight; ++y)
+        {
+            for (int x = 0; x < _textureWidth; ++x)
+            {
+                int yBottomRow = y - ((kernelWidth - 1) / 2);
+                int yTopRow = y + ((kernelWidth - 1) / 2);
+
+                int xLeftColumn = x - ((kernelWidth - 1) / 2);
+                int xRightColumn = x + ((kernelWidth - 1) / 2);
+
+                int samples = 0;           // number of pixels sampled in the kernel
+                Color sampleAdded = new Color(); // add all pixels in the kernel here
+                for (int yOffset = yBottomRow; yOffset <= yTopRow; ++yOffset)
+                {
+                    for (int xOffset = xLeftColumn; xOffset <= xRightColumn; ++xOffset)
+                    {
+                        Color sample = _modifiedTexture.GetPixel(xOffset, yOffset);
+                        sampleAdded += sample;
+                        samples += 1;
+                    }
+                }
+
+                Color averaged = sampleAdded / samples;
+                blurTexture.SetPixel(x, y, averaged);
+            }
+        }
+        blurTexture.Apply();
+
+        for (int y = 0; y < _modifiedTexture.height; ++y)
+        {
+            for (int x = 0; x < _modifiedTexture.width; ++x)
+            {
+                _modifiedTexture.SetPixel(x, y, blurTexture.GetPixel(x, y));
             }
         }
         _modifiedTexture.Apply();

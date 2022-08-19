@@ -163,7 +163,9 @@ MonoBehaviour:
   _dungeon: {r: 0.4056604, g: 0.4056604, b: 0.4056604, a: 1}
   _abyss: {r: 0, g: 0, b: 0, a: 1}
   _seed: 42069
-  _clean: 0
+  _clean: 1
+  _isBlurry: 1
+  _blurStrength: 5
 --- !u!212 &455320673
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -270,7 +272,9 @@ MonoBehaviour:
   _dungeon: {r: 0.4056604, g: 0.4056604, b: 0.4056604, a: 1}
   _abyss: {r: 0, g: 0, b: 0, a: 1}
   _seed: 42069
-  _clean: 0
+  _clean: 1
+  _isBlurry: 1
+  _blurStrength: 3
 --- !u!212 &855889474
 SpriteRenderer:
   m_ObjectHideFlags: 0
