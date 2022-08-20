@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class TerrainImageGenerator : TerrainGenerator_Base
 {
-    float _timeUntilNextGen = 2.0f;
-    float _timeBetweenGens = 2.0f;
+    [SerializeField] float _timeUntilNextGen = 1.0f;
+    [SerializeField] float _timeBetweenGens = 10000000.0f;
 
     [SerializeField] bool _filter;
     [SerializeField] bool _readable;
@@ -18,26 +18,34 @@ public class TerrainImageGenerator : TerrainGenerator_Base
     [SerializeField] Color _dungeon;   // 0.8 - 0.9 
     [SerializeField] Color _abyss;     // 0.9 - 1.0
 
+    [SerializeField] Color _water;
+
     const int ZONE_LAYER = 0;
     const int RANDOM_ZONE_LAYER = 1;
+    const int RIVER_LAYER = 2;
 
     [SerializeField] int _seed = 42069;
     [SerializeField] bool _clean;
     [SerializeField] bool _isBlurry;
     [SerializeField][Range(3.0f, 9.0f)] float  _blurStrength = 3;
+    [SerializeField] int _outerRings = 1;
+    [SerializeField] int _minSurroundingMatches = 2;
+    [SerializeField] int _totalRivers;
+    [SerializeField] bool _hasRivers;
+    [SerializeField] bool _hasReachedCenter;
 
     float Noise(int x, int y, int layer, int seed)
     {
-        Random.seed = 1000000;
+        Random.InitState(1000000); // Random.InitState(42);
         int randomValue1 = (int)Random.Range(1.0f, 10000.0f);
-        Random.seed = 232323;
+        Random.InitState(232323);
         int randomValue2 = (int)Random.Range(1.0f, 10000.0f);
-        Random.seed = 98989989;
+        Random.InitState(98989989);
         int randomValue3 = (int)Random.Range(1.0f, 10000.0f);
-        Random.seed = 123123123;
+        Random.InitState(123123123);
         int randomValue4 = (int)Random.Range(1.0f, 10000.0f);
 
-        Random.seed = (x + randomValue1) * (y + randomValue2) * (layer + randomValue3) * (seed + randomValue4);
+        Random.InitState((x + randomValue1) * (y + randomValue2) * (layer + randomValue3) * (seed + randomValue4));
         float noise = Random.Range(0.0f, 0.999999999999999f);
         return noise;
     }
@@ -76,6 +84,12 @@ public class TerrainImageGenerator : TerrainGenerator_Base
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            _renderer.sprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
+            Debug.Log("Rendered");
+        }
+
         _timeUntilNextGen -= Time.deltaTime;
         if (_timeUntilNextGen > 0.0f) return;
 
@@ -90,10 +104,15 @@ public class TerrainImageGenerator : TerrainGenerator_Base
 
         if (_clean)
         {
-            RemoveDiagonalSingleCellZones();
+            for (int i = 0; i < _totalRivers; i++)
+            {
+                CleanUpZones(_outerRings, _minSurroundingMatches, false);
 
-            terrainSprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
-            _renderer.sprite = terrainSprite;
+                terrainSprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
+                _renderer.sprite = terrainSprite;
+            }
+            // final clean pass
+            CleanUpZones(1, 4, true);
         }
 
         if (_isBlurry)
@@ -104,13 +123,27 @@ public class TerrainImageGenerator : TerrainGenerator_Base
             _renderer.sprite = terrainSprite;
         }
 
+        if (_hasRivers)
+        {
+            for (int i = 0; i < _totalRivers; i++)
+            {
+                Debug.Log("Generated River");
+                GenerateRiver(_seed + i * (int)_timeUntilNextGen);
+            }
+
+
+            for (int i = 0; i < 3; i++)
+            {
+                // final clean pass
+                CleanUpZones(1, 4, true);
+            }
+
+            terrainSprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
+            _renderer.sprite = terrainSprite;
+        }
+
         // Note: if file exists at path, it will overwrite.
         _ = AssetCreator.CreateTexture2D(_modifiedTexture, $"{_folderPath}{_fileName}.bmp", _filter, _readable, _format);
-    }
-
-    private void BlurTerrain(object blurStrength)
-    {
-        throw new System.NotImplementedException();
     }
 
     void GenerateBasicZones()
@@ -149,29 +182,48 @@ public class TerrainImageGenerator : TerrainGenerator_Base
         _modifiedTexture.Apply();
     }
 
-    void RemoveDiagonalSingleCellZones()
+    void CleanUpZones(int outerRings, int minMatches, bool finalPass)
     {
         // print(_modifiedTexture.GetPixel(0, 0));
 
         // remove all tiles that do not have neighbouring tiles of the same type.
+
         for (int y = 0; y < _textureHeight; ++y)
         {
             for (int x = 0; x < _textureWidth; ++x)
             {
-                //Color tl = _modifiedTexture.GetPixel(x - 1, y + 1);
-                Color t = _modifiedTexture.GetPixel(x, y + 1);
-                //Color tr = _modifiedTexture.GetPixel(x + 1, y + 1);
-                Color l = _modifiedTexture.GetPixel(x - 1, y);
+                int matchCount = 0;
                 Color c = _modifiedTexture.GetPixel(x, y);
-                Color r = _modifiedTexture.GetPixel(x + 1, y);
-                //Color bl = _modifiedTexture.GetPixel(x - 1, y - 1);
-                Color b = _modifiedTexture.GetPixel(x, y - 1);
-                //Color br = _modifiedTexture.GetPixel(x + 1, y - 1);
-
-                if (c == t || c == l || c == r || c == b)
+                if (c == _water)
                     continue;
-
-                _modifiedTexture.SetPixel(x, y, l);
+                // Iterates through surrounding tiles
+                for (int i = -outerRings; i <= outerRings; ++i)
+                {
+                    for (int j = -outerRings; j <= outerRings; ++j)
+                    {
+                        if (x == 0 && y == 0)
+                            continue;
+                        if (c == _modifiedTexture.GetPixel(x + i, y + j))
+                        {
+                            // checks surrounding tiles for matches
+                            matchCount++;
+                            if (matchCount >= minMatches)
+                                break;
+                        }
+                    }
+                    if (matchCount >= minMatches)
+                        break;
+                }
+                // once it has iterated thrugh all tiles or found the minimum matches it will...
+                if (matchCount >= minMatches)
+                    continue; // either continue or...
+                else // set the pixel to a new pixel from one of the 3 pixels in the row below
+                {
+                    if (!finalPass)
+                        _modifiedTexture.SetPixel(x, y, _modifiedTexture.GetPixel(x + (int)Random.Range(-1.0f, 1.0f), y - 1));
+                    else
+                        _modifiedTexture.SetPixel(x, y, _modifiedTexture.GetPixel(x - 1, y));
+                }
             }
         }
         _modifiedTexture.Apply();
@@ -221,6 +273,277 @@ public class TerrainImageGenerator : TerrainGenerator_Base
         }
         _modifiedTexture.Apply();
     }
+
+    struct GeneratedRiverCell
+    {
+        public int x;
+        public int y;
+        public int direction;
+    };
+
+    void GenerateRiver(int offset)
+    {
+        LinkedList<GeneratedRiverCell> generatedRiverCells = new LinkedList<GeneratedRiverCell>();
+
+        int seed = 362122325 + offset;
+
+        // Generate a random start pixel on a random edge.
+
+        // 0 is up
+        int upOffsetX = 0;
+        int upOffsetY = 0;
+        // 1 is up diag
+        int fwdUpDiagOffsetX = 0;
+        int fwdUpDiagOffsetY = 0;
+        // 2 is down diag
+        int fwdDownDiagOffsetX = 0;
+        int fwdDownDiagOffsetY = 0;
+        // 3 is fwd
+        int fwdOffsetX = 0;
+        int fwdOffsetY = 0;
+
+        int randomX = 0;
+        int randomY = 0;
+        float randomEdge = Noise(0, 0, RIVER_LAYER, seed);
+
+        if (randomEdge < 0.25f) // LHS
+        {
+            upOffsetX = 0;
+            upOffsetY = 1;
+            fwdUpDiagOffsetX = 1;
+            fwdUpDiagOffsetY = 1;
+            fwdOffsetX = 1;
+            fwdOffsetY = 0;
+            fwdDownDiagOffsetX = 1;
+            fwdDownDiagOffsetY = -1;
+
+            int edgeLength = _textureHeight;
+            randomX = 0;
+
+            float noise = Noise(1, 1, RIVER_LAYER, seed);
+            // 0 -> 0.99999
+
+            float scaled = noise * edgeLength;
+            // 0 -> 63.9999999
+
+            float floor = Mathf.Floor(scaled);
+            // 0 -> 63
+
+            randomY = (int)floor;
+        }
+        else if (randomEdge < 0.75f) // RHS
+        {
+            upOffsetX = 0;
+            upOffsetY = -1;
+
+            fwdUpDiagOffsetX = -1;
+            fwdUpDiagOffsetY = -1;
+
+            fwdOffsetX = -1;
+            fwdOffsetY = 0;
+
+            fwdDownDiagOffsetX = -1;
+            fwdDownDiagOffsetY = 1;
+
+            int edgeLength = _textureHeight;
+            randomX = _textureWidth - 1;
+
+            float noise = Noise(1, 1, RIVER_LAYER, seed);
+            // 0 -> 0.99999
+
+            float scaled = noise * edgeLength;
+            // 0 -> 63.9999999
+
+            float floor = Mathf.Floor(scaled);
+            // 0 -> 63
+
+            randomY = (int)floor;
+        }
+        else if (randomEdge < 0.5f) // TOP
+        {
+            upOffsetX = 1;
+            upOffsetY = 0;
+
+            fwdUpDiagOffsetX = 1;
+            fwdUpDiagOffsetY = -1;
+
+            fwdOffsetX = 0;
+            fwdOffsetY = -1;
+
+            fwdDownDiagOffsetX = -1;
+            fwdDownDiagOffsetY = -1;
+
+            int edgeLength = _textureWidth;
+            randomY = _textureHeight - 1;
+
+            float noise = Noise(1, 1, RIVER_LAYER, seed);
+            // 0 -> 0.99999
+
+            float scaled = noise * edgeLength;
+            // 0 -> 63.9999999
+
+            float floor = Mathf.Floor(scaled);
+            // 0 -> 63
+
+            randomX = (int)floor;
+        }
+        else if (randomEdge < 1.0f) // BOT
+        {
+            upOffsetX = 1;
+            upOffsetY = 0;
+
+            fwdUpDiagOffsetX = 1;
+            fwdUpDiagOffsetY = 1;
+
+            fwdOffsetX = 0;
+            fwdOffsetY = 1;
+
+            fwdDownDiagOffsetX = -1;
+            fwdDownDiagOffsetY = 1;
+
+            int edgeLength = _textureWidth;
+            randomY = 0;
+
+            float noise = Noise(1, 1, RIVER_LAYER, seed);
+            // 0 -> 0.99999
+
+            float scaled = noise * edgeLength;
+            // 0 -> 63.9999999
+
+            float floor = Mathf.Floor(scaled);
+            // 0 -> 63
+
+            randomX = (int)floor;
+        }
+
+        // Generate random direction.
+        {
+            /*
+            float random = Noise(2, 2, RIVER_LAYER, seed);
+            // 0 -> 0.999
+            float scaled = random * 5;
+            // 0 -> 4.9999
+            float floor = Mathf.Floor(scaled);
+            // 0 -> 4
+            int randomDirection = (int)floor;
+            */
+
+
+        }
+
+        GeneratedRiverCell first = new GeneratedRiverCell
+        {
+            x = randomX,
+            y = randomY,
+            direction = 2
+        };
+        generatedRiverCells.AddLast(first);
+
+        GeneratedRiverCell second = new GeneratedRiverCell
+        {
+            x = randomX + fwdOffsetX,
+            y = randomY + fwdOffsetY,
+            direction = 2
+        };
+        generatedRiverCells.AddLast(second);
+
+        print(first.x);
+        print(first.y);
+        print(second.x);
+        print(second.y);
+
+        // 3. be a drunk emu
+        GeneratedRiverCell current = second;
+        int i = 0;
+        bool hasReachedCenter = false;
+        while (current.x != 0 && current.x != _textureWidth - 1 && current.y != 0 && current.y != _textureHeight - 1)
+        {
+            ++i;
+
+            GeneratedRiverCell previous = generatedRiverCells.Last.Value;
+            current = new GeneratedRiverCell();
+
+            // Generate random direction.
+            float random = Noise(2 + i, 2 + i, RIVER_LAYER, seed);
+            // 0 -> 0.999
+
+            float scaled;
+            if ((current.x <= 64 || current.x >= 192 || current.y <= 64 || current.y >= 192) && !hasReachedCenter)
+                scaled = random * 5;
+            else
+            {
+                hasReachedCenter = true;
+                scaled = random * 7;
+            }
+
+            // 0 -> 4.9999
+            float floor = Mathf.Floor(scaled);
+            // 0 -> 4
+            int randomDirection = (int)floor;
+
+            current.direction = randomDirection;
+
+            if (randomDirection == 0) // UP
+            {
+                current.x += previous.x + upOffsetX;
+                current.y += previous.y + upOffsetY;
+            }
+            else if (randomDirection == 1) // FwdUpDiag
+            {
+                current.x += previous.x + fwdUpDiagOffsetX;
+                current.y += previous.y + fwdUpDiagOffsetY;
+            }
+            else if (randomDirection == 2) // FwdDownDiag
+            {
+                current.x += previous.x + fwdDownDiagOffsetX;
+                current.y += previous.y + fwdDownDiagOffsetY;
+            }
+
+            else if (randomDirection == 3) // FWD
+            {
+                current.x += previous.x + fwdOffsetX;
+                current.y += previous.y + fwdOffsetY;
+            }
+
+            else if (randomDirection == 4) // DOWN
+            {
+                current.x += previous.x - upOffsetX;
+                current.y += previous.y - upOffsetY;
+            }
+            else if (randomDirection == 5) // BwdDownDiag
+            {
+                current.x += previous.x - fwdUpDiagOffsetX;
+                current.y += previous.y - fwdUpDiagOffsetY;
+            }
+            else if (randomDirection == 6) // BwdUpDiag
+            {
+                current.x += previous.x - fwdDownDiagOffsetX;
+                current.y += previous.y - fwdDownDiagOffsetY;
+            }
+
+            print(current.x);
+            print(current.y);
+
+            generatedRiverCells.AddLast(current);
+        }
+
+        print(generatedRiverCells.Count);
+
+        foreach (GeneratedRiverCell generatedRiverCell in generatedRiverCells)
+        {
+            for (int j = -1; j <= 1; ++j)
+            {
+                for (int k = -1; k <= 1; ++k)
+                {
+                    _modifiedTexture.SetPixel(generatedRiverCell.x + j, generatedRiverCell.y + k, _water);
+                }
+            }
+        }
+        _modifiedTexture.Apply();
+
+        Debug.Log("RiverComplete");
+    }
+
 
     private void OnDisable()
     {
