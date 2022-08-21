@@ -196,6 +196,7 @@ public class JK_TerrainImageGenerator : MonoBehaviour
         sourceTexture.Apply();
     }
 
+
     void BlurTerrain(int kernelWidth)
     {
         if (kernelWidth % 2 == 0) return; // this means the number is event, ignore.
