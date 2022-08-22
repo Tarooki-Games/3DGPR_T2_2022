@@ -17,6 +17,7 @@ public class TerrainImageGenerator : TerrainGenerator_Base
     [SerializeField] protected Color _abyss;     // 0.9 - 1.0
 
     [SerializeField] protected Color _water;
+    [SerializeField] protected Color _waterBank;
 
     [SerializeField] protected bool _generateBasicZones;
     [SerializeField] protected bool _clean;
@@ -34,6 +35,8 @@ public class TerrainImageGenerator : TerrainGenerator_Base
     [SerializeField] protected int _totalRivers;
 
     [SerializeField][Range(3.0f, 9.0f)] protected float _blurStrength = 3;
+    [SerializeField] int _riverAddedWidth = 1;
+    [SerializeField] int _riverBedWidth = 3;
 
     protected float Noise(int x, int y, int layer, int seed)
     {
@@ -146,7 +149,7 @@ public class TerrainImageGenerator : TerrainGenerator_Base
         }
 
         // Note: if file exists at path, it will overwrite.
-        _modifiedTexture = AssetCreator.CreateTexture2D(_modifiedTexture, $"{_folderPath}{_fileName}");
+        _modifiedTexture = AssetCreator.CreateTexture2D(_modifiedTexture, $"{_folderPathA3}{_fileName}");
         _modifiedTexture.Apply();
     }
 
@@ -535,11 +538,26 @@ public class TerrainImageGenerator : TerrainGenerator_Base
 
         foreach (GeneratedRiverCell generatedRiverCell in generatedRiverCells)
         {
-            for (int j = -1; j <= 1; ++j)
+            //for (int j = -_riverAddedWidth; j <= _riverAddedWidth; ++j)
+            //{
+            //    for (int k = -_riverAddedWidth; k <= _riverAddedWidth; ++k)
+            //    {
+            //        _modifiedTexture.SetPixel(generatedRiverCell.x + j, generatedRiverCell.y + k, _water);
+            //    }
+            //}
+
+            int riverBankPixelDistance = _riverBedWidth + _riverAddedWidth;
+
+            for (int j = -riverBankPixelDistance; j <= riverBankPixelDistance; ++j)
             {
-                for (int k = -1; k <= 1; ++k)
+                for (int k = -riverBankPixelDistance; k <= riverBankPixelDistance; ++k)
                 {
-                    _modifiedTexture.SetPixel(generatedRiverCell.x + j, generatedRiverCell.y + k, _water);
+                    if (Mathf.Abs(j) <= _riverBedWidth)
+                        _modifiedTexture.SetPixel(generatedRiverCell.x + j, generatedRiverCell.y + k, _water);
+                    else if (_modifiedTexture.GetPixel(generatedRiverCell.x + j, generatedRiverCell.y + k) == _water)
+                            continue;
+                    else
+                        _modifiedTexture.SetPixel(generatedRiverCell.x + j, generatedRiverCell.y + k, _waterBank);
                 }
             }
         }
@@ -552,7 +570,7 @@ public class TerrainImageGenerator : TerrainGenerator_Base
     protected virtual void OnDisable()
     {
         // Note: if file exists at path, it will overwrite.
-        _modifiedTexture = AssetCreator.CreateTexture2D(_modifiedTexture, $"{_folderPath}{_fileName}", _filter, _readable, _format);
+        _modifiedTexture = AssetCreator.CreateTexture2D(_modifiedTexture, $"{_folderPathA2}{_fileName}", _filter, _readable, _format);
         _modifiedTexture.Apply();
     }
 }

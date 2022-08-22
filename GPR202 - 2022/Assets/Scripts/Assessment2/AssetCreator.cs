@@ -7,12 +7,61 @@ using System;
 
 public static class AssetCreator
 {
+    //public static Texture2D CopyTexture2DAsset(Texture2D texture2D, string path, bool filter, bool readable, bool format)
+    //{
+    //    var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GetAssetPath(texture2D));
+    //    return texture;
+    //}
 
-    public static Texture2D CopyTexture2DAsset(Texture2D texture2D, string path, bool filter, bool readable, bool format)
+    public static Texture2D GetTexture2DFromAssets(string path, bool filter = true, bool readable = true, bool format = true)
     {
-        var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(AssetDatabase.GetAssetPath(texture2D));
-        return texture;
+        //string dirPath = "Assets/Sprites/Assessment2/";
+
+        //if (!Directory.Exists(dirPath))
+        //{
+        //    Directory.CreateDirectory(dirPath);
+        //}
+
+        //string fullPath = $"{path}.bmp";
+
+        TextureImporter A = (TextureImporter)AssetImporter.GetAtPath(path);
+        TextureImporterPlatformSettings texSet = A.GetDefaultPlatformTextureSettings();
+
+        // DEBUGGING
+        if (filter)
+            A.filterMode = FilterMode.Point;
+        else
+            A.filterMode = FilterMode.Bilinear;
+        if (readable)
+            A.isReadable = true;
+        else
+            A.isReadable = false;
+        if (format)
+        {
+            texSet.format = TextureImporterFormat.RGB24;
+            A.SetPlatformTextureSettings(texSet);
+        }
+        else
+        {
+            texSet.format = TextureImporterFormat.RGBA32;
+            A.SetPlatformTextureSettings(texSet);
+        }
+        // A.textureCompression = TextureImporterCompression.Uncompressed;
+
+        AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+
+        // AssetDatabase.Refresh();
+
+        Texture2D texture2D1 = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+
+        texture2D1.Apply();
+
+        //AssetDatabase.SaveAssets();
+
+        return texture2D1;
     }
+
+
     public static Texture2D CreateTexture2D(Texture2D texture2D, string path, bool filter = true, bool readable = true, bool format = true)
     {
         var bytes = texture2D.EncodeToPNG();

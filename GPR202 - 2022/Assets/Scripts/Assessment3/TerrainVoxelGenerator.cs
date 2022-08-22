@@ -16,7 +16,7 @@ public class TerrainVoxelGenerator : TerrainImageGenerator
 
     // The number of cycles of the basic noise pattern that are repeated
     // over the width and height of the texture.
-    [SerializeField] protected int _scale = 3;
+    [SerializeField] protected int _perlinNoiseScalar = 3;
 
     [SerializeField] GameObject _voxelPrefab;
 
@@ -27,8 +27,6 @@ public class TerrainVoxelGenerator : TerrainImageGenerator
 
     protected virtual void Start()
     {
-        _folderPath = "Assets/Sprites/Assessment3/";
-
         _noiseTexture = new Texture2D(_textureWidth, _textureHeight);
         _heightMap = new Texture2D(_textureWidth, _textureHeight);
     }
@@ -43,6 +41,16 @@ public class TerrainVoxelGenerator : TerrainImageGenerator
 
         _timeUntilNextGen = _timeBetweenGens;
 
+        if (!_isGeneratingVoxels)
+        {
+            base.Update();
+            _fileName = "Image_Voxels";
+            _modifiedTexture = AssetCreator.GetTexture2DFromAssets($"{_folderPathA3}{_fileName}");
+            _modifiedTexture.Apply();
+        }
+
+
+
         //if (_generatePerlinNoise)
         //{
         //    GeneratePerlinNoiseTexture2D();
@@ -55,23 +63,28 @@ public class TerrainVoxelGenerator : TerrainImageGenerator
         //    _noiseTexture.Apply();
         //}
 
-        _heightMap = GenerateHeightMap();
-        GenerateVoxelTerrain();
+        if (_isGeneratingVoxels)
+        {
+            _fileName = "HeightMap";
 
-        Sprite heightMap = Sprite.Create(_heightMap, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
-        _renderer.sprite = heightMap;
+            _heightMap = GenerateHeightMap();
+            GenerateVoxelTerrain();
 
-        _heightMap = AssetCreator.CreateTexture2D(_heightMap, $"{_folderPath}HeightMap", false, true, false);
-        _heightMap.Apply();
+            Sprite heightMap = Sprite.Create(_heightMap, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
+            _renderer.sprite = heightMap;
+
+            _heightMap = AssetCreator.CreateTexture2D(_heightMap, $"{_folderPathA3}{_fileName}", false, true, false);
+            _heightMap.Apply();
+        }
     }
 
-    IEnumerator SaveCreatedAsset(Texture2D texture2D)
-    {
-        yield return new WaitForSeconds(1.0f);
+    //IEnumerator SaveCreatedAsset(Texture2D texture2D)
+    //{
+    //    yield return new WaitForSeconds(1.0f);
 
-        texture2D = AssetCreator.CreateTexture2D(texture2D, $"{_folderPath}HeightMap", false, true, false);
-        texture2D.Apply();
-    }
+    //    texture2D = AssetCreator.CreateTexture2D(texture2D, $"{_folderPath}HeightMap", false, true, false);
+    //    texture2D.Apply();
+    //}
 
     protected Texture2D GenerateHeightMap()
     {
@@ -79,8 +92,8 @@ public class TerrainVoxelGenerator : TerrainImageGenerator
         {
             for (float x = 0; x < _textureWidth; ++x)
             {
-                float xCoord = _seed + x / _textureWidth * _scale;
-                float yCoord = _seed + y / _textureHeight * _scale;
+                float xCoord = _seed + x / _textureWidth * _perlinNoiseScalar;
+                float yCoord = _seed + y / _textureHeight * _perlinNoiseScalar;
                 float perlinNoise = Mathf.PerlinNoise(xCoord, yCoord);
 
 

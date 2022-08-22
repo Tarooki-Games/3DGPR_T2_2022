@@ -11,14 +11,17 @@ public class TerrainGenerator_Base : MonoBehaviour
     protected int _textureWidth;
     protected int _textureHeight;
 
-    protected string _folderPath = "Assets/Sprites/Assessment2/";
+    protected string _folderPathA2 = "Assets/Sprites/Assessment2/";
+    protected string _folderPathA3 = "Assets/Sprites/Assessment3/";
 
-    [Header("TerrainGenerator_Base.cs   VARIABLES")]
+    [Header("ALL VARIABLES: TerrainGenerator_Base.cs")]
     [SerializeField] protected string _fileName;
 
     [SerializeField] protected float _timeUntilNextGen = 1.0f;
     [SerializeField] protected float _timeBetweenGens = 10000000.0f;
     [SerializeField] protected int _seed = 42069;
+
+    [SerializeField] protected bool _isGeneratingVoxels;
 
     protected virtual void Awake()
     {

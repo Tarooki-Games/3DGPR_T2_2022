@@ -156,6 +156,8 @@ MonoBehaviour:
   _fileName: 64x64_Zones
   _timeUntilNextGen: 2
   _timeBetweenGens: 2
+  _seed: 42069
+  _isGeneratingVoxels: 0
   _filter: 1
   _readable: 1
   _format: 1
@@ -164,21 +166,19 @@ MonoBehaviour:
   _lava: {r: 0.8773585, g: 0.47251245, b: 0.32694018, a: 1}
   _dungeon: {r: 0.4056604, g: 0.4056604, b: 0.4056604, a: 1}
   _abyss: {r: 0, g: 0, b: 0, a: 1}
-  _water: {r: 0.09803922, g: 0.64363307, b: 0.7735849, a: 0}
-  _generateBasicZones: 1
-  _clean: 1
+  _water: {r: 0.09803922, g: 0.64363307, b: 0.7735849, a: 1}
+  _waterBank: {r: 0.9245283, g: 0.88577205, b: 0.4753471, a: 1}
+  _generateBasicZones: 0
+  _clean: 0
   _hasRivers: 1
   _isBlurry: 0
-  _generatePerlinNoise: 0
   _hasReachedCenter: 0
-  _seed: 42069
-  _outerRings: 1
-  _minSurroundingMatches: 2
-  _totalRivers: 3
+  _outerRings: 2
+  _minSurroundingMatches: 12
+  _totalRivers: 7
   _blurStrength: 5
-  xOrigin: 0
-  yOrigin: 0
-  _scale: 0
+  _riverAddedWidth: 2
+  _riverBedWidth: 0
 --- !u!212 &455320673
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -276,8 +276,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _fileName: 256x256_Zones
-  _timeUntilNextGen: 2
-  _timeBetweenGens: 2
+  _timeUntilNextGen: 1
+  _timeBetweenGens: 5
+  _seed: 42069
+  _isGeneratingVoxels: 0
   _filter: 1
   _readable: 1
   _format: 1
@@ -287,20 +289,18 @@ MonoBehaviour:
   _dungeon: {r: 0.4056604, g: 0.4056604, b: 0.4056604, a: 1}
   _abyss: {r: 0, g: 0, b: 0, a: 1}
   _water: {r: 0.35555357, g: 0.66887337, b: 0.8867924, a: 1}
-  _generateBasicZones: 1
-  _clean: 1
+  _waterBank: {r: 0.9245283, g: 0.88577205, b: 0.4753471, a: 1}
+  _generateBasicZones: 0
+  _clean: 0
   _hasRivers: 1
   _isBlurry: 0
-  _generatePerlinNoise: 0
   _hasReachedCenter: 0
-  _seed: 42069
   _outerRings: 2
   _minSurroundingMatches: 12
-  _totalRivers: 5
+  _totalRivers: 7
   _blurStrength: 5
-  xOrigin: 0
-  yOrigin: 0
-  _scale: 30
+  _riverAddedWidth: 1
+  _riverBedWidth: 5
 --- !u!212 &855889474
 SpriteRenderer:
   m_ObjectHideFlags: 0
