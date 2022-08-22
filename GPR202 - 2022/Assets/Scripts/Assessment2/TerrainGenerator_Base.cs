@@ -12,7 +12,13 @@ public class TerrainGenerator_Base : MonoBehaviour
     protected int _textureHeight;
 
     protected string _folderPath = "Assets/Sprites/Assessment2/";
+
+    [Header("TerrainGenerator_Base.cs   VARIABLES")]
     [SerializeField] protected string _fileName;
+
+    [SerializeField] protected float _timeUntilNextGen = 1.0f;
+    [SerializeField] protected float _timeBetweenGens = 10000000.0f;
+    [SerializeField] protected int _seed = 42069;
 
     protected virtual void Awake()
     {
@@ -22,5 +28,15 @@ public class TerrainGenerator_Base : MonoBehaviour
         _textureWidth = _sourceTexture.width;
         _textureHeight = _sourceTexture.height;
         _modifiedTexture = new Texture2D(_textureWidth, _textureHeight, TextureFormat.RGB24, false);
+    }
+
+    protected virtual void ManageTimeAndSeed()
+    {
+        _timeUntilNextGen -= Time.deltaTime;
+        if (_timeUntilNextGen > 0.0f) return;
+
+        _seed = (int)Random.Range(0, 1000000.0f);
+
+        _timeUntilNextGen = _timeBetweenGens;
     }
 }

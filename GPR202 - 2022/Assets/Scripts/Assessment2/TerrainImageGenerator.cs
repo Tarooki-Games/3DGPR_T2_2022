@@ -4,52 +4,38 @@ using UnityEngine;
 
 public class TerrainImageGenerator : TerrainGenerator_Base
 {
-    [SerializeField] float _timeUntilNextGen = 1.0f;
-    [SerializeField] float _timeBetweenGens = 10000000.0f;
-
-    [SerializeField] bool _filter;
-    [SerializeField] bool _readable;
-    [SerializeField] bool _format;
+    [Header("TerrainImageGenerator.cs   VARIABLES")]
+    [SerializeField] protected bool _filter;
+    [SerializeField] protected bool _readable;
+    [SerializeField] protected bool _format;
     
-    [SerializeField] Color _grass;     // 0.0 - 0.4
+    [SerializeField] protected Color _grass;     // 0.0 - 0.4
     //[SerializeField] Color _swamp;   // 
-    [SerializeField] Color _forest;    // 0.4 - 0.7
-    [SerializeField] Color _lava;      // 0.7 - 0.8
-    [SerializeField] Color _dungeon;   // 0.8 - 0.9 
-    [SerializeField] Color _abyss;     // 0.9 - 1.0
+    [SerializeField] protected Color _forest;    // 0.4 - 0.7
+    [SerializeField] protected Color _lava;      // 0.7 - 0.8
+    [SerializeField] protected Color _dungeon;   // 0.8 - 0.9 
+    [SerializeField] protected Color _abyss;     // 0.9 - 1.0
 
-    [SerializeField] Color _water;
+    [SerializeField] protected Color _water;
 
-    [SerializeField] bool _generateBasicZones;
-    [SerializeField] bool _clean;
-    [SerializeField] bool _hasRivers;
-    [SerializeField] bool _isBlurry;
-    [SerializeField] bool _generatePerlinNoise;
+    [SerializeField] protected bool _generateBasicZones;
+    [SerializeField] protected bool _clean;
+    [SerializeField] protected bool _hasRivers;
+    [SerializeField] protected bool _isBlurry;
 
-    [SerializeField] bool _hasReachedCenter;
+    [SerializeField] protected bool _hasReachedCenter;
 
-    Texture2D _noiseTexture;
+    protected const int ZONE_LAYER = 0;
+    protected const int RANDOM_ZONE_LAYER = 1;
+    protected const int RIVER_LAYER = 2;
 
-    const int ZONE_LAYER = 0;
-    const int RANDOM_ZONE_LAYER = 1;
-    const int RIVER_LAYER = 2;
+    [SerializeField] protected int _outerRings = 1;
+    [SerializeField] protected int _minSurroundingMatches = 2;
+    [SerializeField] protected int _totalRivers;
 
-    [SerializeField] int _seed = 42069;
-    [SerializeField] int _outerRings = 1;
-    [SerializeField] int _minSurroundingMatches = 2;
-    [SerializeField] int _totalRivers;
+    [SerializeField][Range(3.0f, 9.0f)] protected float _blurStrength = 3;
 
-    [SerializeField][Range(3.0f, 9.0f)] float  _blurStrength = 3;
-
-    // The origin of the sampled area in the plane.
-    [SerializeField] float xOrigin;
-    [SerializeField] float yOrigin;
-
-    // The number of cycles of the basic noise pattern that are repeated
-    // over the width and height of the texture.
-    [SerializeField] int _scale = 3;
-
-    float Noise(int x, int y, int layer, int seed)
+    protected float Noise(int x, int y, int layer, int seed)
     {
         Random.InitState(1000000); // Random.InitState(42);
         int randomValue1 = (int)Random.Range(1.0f, 10000.0f);
@@ -65,7 +51,7 @@ public class TerrainImageGenerator : TerrainGenerator_Base
         return noise;
     }
 
-    Color NoiseToZone(float noiseValue)
+    protected Color NoiseToZone(float noiseValue)
     {
         if (noiseValue < 0.4f) // 25%
             return _grass;
@@ -97,12 +83,7 @@ public class TerrainImageGenerator : TerrainGenerator_Base
     //    }
     //}
 
-    private void Start()
-    {
-        _noiseTexture = new Texture2D(_textureWidth, _textureHeight);
-    }
-
-    void Update()
+    protected virtual void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -116,17 +97,6 @@ public class TerrainImageGenerator : TerrainGenerator_Base
         _seed = (int)Random.Range(0, 1000000.0f);
 
         _timeUntilNextGen = _timeBetweenGens;
-
-        if (_generatePerlinNoise)
-        {
-            GeneratePerlinNoise();
-
-            Sprite terrainSprite = Sprite.Create(_noiseTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
-            _renderer.sprite = terrainSprite;
-
-            // Note: if file exists at path, it will overwrite.                                  bilinear, read/write enabled, RGBA32
-            AssetCreator.CreateTexture2D(_noiseTexture, $"{_folderPath}noiseTexture.bmp", false,    true,               false);
-        }
 
         if (_generateBasicZones)
         {
@@ -180,7 +150,7 @@ public class TerrainImageGenerator : TerrainGenerator_Base
         _modifiedTexture.Apply();
     }
 
-    void GenerateBasicZones()
+    protected void GenerateBasicZones()
     {
         // Generate original zone type
         float originalZoneType = Noise(0, 0, ZONE_LAYER, _seed);
@@ -216,7 +186,7 @@ public class TerrainImageGenerator : TerrainGenerator_Base
         _modifiedTexture.Apply();
     }
 
-    void CleanUpZones(int outerRings, int minMatches, bool finalPass)
+    protected void CleanUpZones(int outerRings, int minMatches, bool finalPass)
     {
         // print(_modifiedTexture.GetPixel(0, 0));
 
@@ -263,7 +233,7 @@ public class TerrainImageGenerator : TerrainGenerator_Base
         _modifiedTexture.Apply();
     }
 
-    void BlurTerrain(int kernelWidth)
+    protected void BlurTerrain(int kernelWidth)
     {
         if (kernelWidth % 2 == 0) return; // this means the number is event, ignore.
 
@@ -308,30 +278,14 @@ public class TerrainImageGenerator : TerrainGenerator_Base
         _modifiedTexture.Apply();
     }
 
-    void GeneratePerlinNoise()
-    {
-        for (float y = 0; y < _textureHeight; ++y)
-        {
-            for (float x = 0; x < _textureWidth; ++x)
-            {
-                float xCoord = _seed + x / _textureWidth * _scale;
-                float yCoord = _seed + y / _textureHeight * _scale;
-                float perlinNoise = Mathf.PerlinNoise(xCoord, yCoord);
-
-                _noiseTexture.SetPixel((int)x, (int)y, new Color(perlinNoise, perlinNoise, perlinNoise));
-            }
-        }
-        _noiseTexture.Apply();
-    }
-
-    struct GeneratedRiverCell
+    protected struct GeneratedRiverCell
     {
         public int x;
         public int y;
         public int direction;
     };
 
-    void GenerateRiver(int offset)
+    protected void GenerateRiver(int offset)
     {
         LinkedList<GeneratedRiverCell> generatedRiverCells = new LinkedList<GeneratedRiverCell>();
 
@@ -595,7 +549,7 @@ public class TerrainImageGenerator : TerrainGenerator_Base
     }
 
 
-    private void OnDisable()
+    protected virtual void OnDisable()
     {
         // Note: if file exists at path, it will overwrite.
         _modifiedTexture = AssetCreator.CreateTexture2D(_modifiedTexture, $"{_folderPath}{_fileName}", _filter, _readable, _format);

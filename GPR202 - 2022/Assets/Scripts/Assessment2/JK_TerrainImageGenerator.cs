@@ -13,7 +13,6 @@ public class JK_TerrainImageGenerator : MonoBehaviour
 
     public GameObject voxelPrefab;
 
-    public float heightScalar = 1.0f;
 
     public int seed = 42069;
 
@@ -28,6 +27,7 @@ public class JK_TerrainImageGenerator : MonoBehaviour
     float timeUntilNextGen = 0.0f;
     float timeBetweenGens = 10.0f;
 
+    public float heightScalar = 1.0f;
     List<GameObject> voxels = new List<GameObject>();
 
     // The number of cycles of the basic noise pattern that are repeated
