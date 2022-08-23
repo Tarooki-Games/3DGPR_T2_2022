@@ -140,7 +140,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &855889473
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -160,7 +160,6 @@ MonoBehaviour:
   _isGeneratingVoxels: 1
   _generatePerlinNoise: 1
   _voxelPrefab: {fileID: 8585813122562811989, guid: 04758e5ac3ea87b49b59c4d38b6ef6d3, type: 3}
-  _clampValue: 10
   _voxels: []
   _numberOfZones: 4
   _zoneWidth: 12
@@ -182,9 +181,6 @@ MonoBehaviour:
     _seed: 7
     _numberOfVoxelSteps: 5
     _noiseZoom: 10
-  _kernelWidthBlur: 7
-  _noiseZoom: 7
-  _numberOfVoxelSteps: 4
   _perlinNoiseScalar: 7
   _heightScalar: 7
 --- !u!212 &855889474
@@ -285,31 +281,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _fileName: Image_Voxels
-  _timeUntilNextGen: 1
-  _timeBetweenGens: 20000
-  _seed: 42069
+  _timeUntilNextGen: 2
+  _timeBetweenGens: 5
+  _seed: 423026
   _isGeneratingVoxels: 0
   _filter: 1
   _readable: 1
   _format: 1
-  _grass: {r: 0.17610195, g: 0.8978308, b: 0.21284574, a: 1}
-  _forest: {r: 0.31318218, g: 0.082013145, b: 0.9150943, a: 1}
-  _lava: {r: 0.8773585, g: 0.47251245, b: 0.32694018, a: 1}
-  _dungeon: {r: 0.4056604, g: 0.4056604, b: 0.4056604, a: 1}
+  _grass: {r: 0.2, g: 0.9, b: 0.2, a: 1}
+  _forest: {r: 0.4, g: 0.1, b: 0.9, a: 1}
+  _lava: {r: 0.9, g: 0.5, b: 0.3, a: 1}
+  _dungeon: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   _abyss: {r: 0, g: 0, b: 0, a: 1}
-  _water: {r: 0.35555357, g: 0.66887337, b: 0.8867924, a: 1}
-  _waterBank: {r: 0, g: 0, b: 0, a: 0}
-  _generateBasicZones: 1
-  _clean: 1
-  _hasRivers: 1
+  _water: {r: 0.4, g: 0.7, b: 0.8, a: 1}
+  _waterBank: {r: 0.9, g: 0.9, b: 0.5, a: 1}
+  _generateBasicZones: 0
+  _clean: 0
   _isBlurry: 0
+  _blurStrength: 5
+  _hasRivers: 1
+  _totalRivers: 3
+  _riverAddedWidth: 1
+  _hasWaterBanks: 1
+  _waterBanksWidth: 2
+  _hasForest: 1
+  _forestWidth: 5
   _hasReachedCenter: 0
   _outerRings: 2
   _minSurroundingMatches: 12
-  _totalRivers: 5
-  _blurStrength: 5
-  _riverAddedWidth: 1
-  _riverBedWidth: 3
 --- !u!212 &1045837173
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -351,7 +350,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: c10b76a18d6659b4f935d6f6350abcef, type: 3}
+  m_Sprite: {fileID: 21300000, guid: d93f114f05fb57342bee42d8902a2191, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -402,18 +401,21 @@ MonoBehaviour:
   _dungeon: {r: 0.4056604, g: 0.4056604, b: 0.4056604, a: 1}
   _abyss: {r: 0, g: 0, b: 0, a: 1}
   _water: {r: 0.35555357, g: 0.66887337, b: 0.8867924, a: 1}
-  _waterBank: {r: 0, g: 0, b: 0, a: 0}
+  _waterBank: {r: 0.9245283, g: 0.88577205, b: 0.4753471, a: 1}
   _generateBasicZones: 1
   _clean: 1
-  _hasRivers: 1
   _isBlurry: 1
+  _blurStrength: 3
+  _hasRivers: 1
+  _totalRivers: 5
+  _riverAddedWidth: 1
+  _hasWaterBanks: 0
+  _waterBanksWidth: 3
+  _hasForest: 0
+  _forestWidth: 7
   _hasReachedCenter: 0
   _outerRings: 7
   _minSurroundingMatches: 20
-  _totalRivers: 5
-  _blurStrength: 3
-  _riverAddedWidth: 1
-  _riverBedWidth: 3
   _generatePerlinNoise: 1
   _perlinNoiseScalar: 3
   _voxelPrefab: {fileID: 8585813122562811989, guid: 04758e5ac3ea87b49b59c4d38b6ef6d3, type: 3}

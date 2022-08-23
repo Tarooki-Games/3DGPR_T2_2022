@@ -1,14 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class TerrainImageGenerator : TerrainGenerator_Base
 {
     [Header("TerrainImageGenerator.cs   VARIABLES")]
+
     [SerializeField] protected bool _filter;
     [SerializeField] protected bool _readable;
     [SerializeField] protected bool _format;
-    
+
     [SerializeField] protected Color _grass;     // 0.0 - 0.4
     //[SerializeField] Color _swamp;   // 
     [SerializeField] protected Color _forest;    // 0.4 - 0.7
@@ -21,8 +23,15 @@ public class TerrainImageGenerator : TerrainGenerator_Base
 
     [SerializeField] protected bool _generateBasicZones;
     [SerializeField] protected bool _clean;
-    [SerializeField] protected bool _hasRivers;
     [SerializeField] protected bool _isBlurry;
+    [SerializeField] [Range(3.0f, 9.0f)] protected float _blurStrength = 3;
+    [SerializeField] protected bool _hasRivers;
+    [SerializeField] protected int _totalRivers;
+    [SerializeField] int _riverAddedWidth = 1;
+    [SerializeField] bool _hasWaterBanks;
+    [SerializeField] int _waterBanksWidth = 3;
+    [SerializeField] bool _hasForest;
+    [SerializeField] int _forestWidth = 7;
 
     [SerializeField] protected bool _hasReachedCenter;
 
@@ -32,11 +41,9 @@ public class TerrainImageGenerator : TerrainGenerator_Base
 
     [SerializeField] protected int _outerRings = 1;
     [SerializeField] protected int _minSurroundingMatches = 2;
-    [SerializeField] protected int _totalRivers;
 
-    [SerializeField][Range(3.0f, 9.0f)] protected float _blurStrength = 3;
-    [SerializeField] int _riverAddedWidth = 1;
-    [SerializeField] int _riverBedWidth = 3;
+    // LinkedList<GeneratedRiverCell> generatedRiverCells = new LinkedList<GeneratedRiverCell>();
+
 
     protected float Noise(int x, int y, int layer, int seed)
     {
@@ -86,73 +93,6 @@ public class TerrainImageGenerator : TerrainGenerator_Base
     //    }
     //}
 
-    protected virtual void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            _renderer.sprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
-            Debug.Log("Rendered");
-        }
-
-        _timeUntilNextGen -= Time.deltaTime;
-        if (_timeUntilNextGen > 0.0f) return;
-
-        _seed = (int)Random.Range(0, 1000000.0f);
-
-        _timeUntilNextGen = _timeBetweenGens;
-
-        if (_generateBasicZones)
-        {
-            GenerateBasicZones();
-
-            Sprite terrainSprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
-            _renderer.sprite = terrainSprite;
-        }
-
-        if (_clean)
-        {
-            for (int i = 0; i < _totalRivers; i++)
-            {
-                CleanUpZones(_outerRings, _minSurroundingMatches, false);
-
-                Sprite terrainSprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
-                _renderer.sprite = terrainSprite;
-            }
-            // final clean pass
-            CleanUpZones(1, 4, true);
-        }
-
-        if (_hasRivers)
-        {
-            for (int i = 0; i < _totalRivers; i++)
-            {
-                Debug.Log("Generated River");
-                GenerateRiver(_seed + i * (int)_timeUntilNextGen);
-            }
-
-            for (int i = 0; i < 3; i++)
-            {
-                // final clean pass
-                CleanUpZones(1, 4, true);
-            }
-
-            Sprite terrainSprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
-            _renderer.sprite = terrainSprite;
-        }
-
-        if (_isBlurry)
-        {
-            BlurTerrain((int)_blurStrength);
-
-            Sprite terrainSprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
-            _renderer.sprite = terrainSprite;
-        }
-
-        // Note: if file exists at path, it will overwrite.
-        _modifiedTexture = AssetCreator.CreateTexture2D(_modifiedTexture, $"{_folderPathA3}{_fileName}");
-        _modifiedTexture.Apply();
-    }
-
     protected void GenerateBasicZones()
     {
         // Generate original zone type
@@ -176,10 +116,17 @@ public class TerrainImageGenerator : TerrainGenerator_Base
                 Color randomlyChosen = new Color(0.0f, 0.0f, 0.0f, 0.0f);
                 while (randomlyChosen == new Color(0.0f, 0.0f, 0.0f, 0.0f))
                 {
-                    Color[] bagOfZones = { l, bl, b, br, l, bl, b, br, randomZoneColor, l, bl, b, br, l, bl, b, br };
-                    float randomNumber = Noise(x, y, RANDOM_ZONE_LAYER, _seed);
-                    int randomIndex = (int)Mathf.Floor(randomNumber * (bagOfZones.Length -1));
-                    randomlyChosen = bagOfZones[randomIndex];
+                    if (x == 0 || y == 0)
+                    {
+                        randomlyChosen = randomZoneColor;
+                    }
+                    else
+                    {
+                        Color[] bagOfZones = { l, bl, b, br, l, bl, b, br, randomZoneColor, l, bl, b, br, l, bl, b, br };
+                        float randomNumber = Noise(x, y, RANDOM_ZONE_LAYER, _seed);
+                        int randomIndex = (int)Mathf.Floor(randomNumber * (bagOfZones.Length - 1));
+                        randomlyChosen = bagOfZones[randomIndex];
+                    }
                 }
                 _modifiedTexture.SetPixel(x, y, randomlyChosen);
             }
@@ -208,7 +155,7 @@ public class TerrainImageGenerator : TerrainGenerator_Base
                 {
                     for (int j = -outerRings; j <= outerRings; ++j)
                     {
-                        if (x == 0 && y == 0)
+                        if (i == 0 && j == 0)
                             continue;
                         if (c == _modifiedTexture.GetPixel(x + i, y + j))
                         {
@@ -454,16 +401,16 @@ public class TerrainImageGenerator : TerrainGenerator_Base
         };
         generatedRiverCells.AddLast(second);
 
-        print(first.x);
-        print(first.y);
-        print(second.x);
-        print(second.y);
+        // print(first.x);
+        // print(first.y);
+        // print(second.x);
+        // print(second.y);
 
         // 3. be a drunk emu
         GeneratedRiverCell current = second;
         int i = 0;
         bool hasReachedCenter = false;
-        while (current.x != 0 && current.x != _textureWidth - 1 && current.y != 0 && current.y != _textureHeight - 1)
+        while (current.x != 0 && current.x < _textureWidth && current.y != 0 && current.y < _textureHeight)
         {
             ++i;
 
@@ -475,7 +422,10 @@ public class TerrainImageGenerator : TerrainGenerator_Base
             // 0 -> 0.999
 
             float scaled;
-            if ((current.x <= 64 || current.x >= 192 || current.y <= 64 || current.y >= 192) && !hasReachedCenter)
+
+            int quarterTexture = _textureWidth / 4;
+
+            if (!hasReachedCenter && (current.x <= quarterTexture || current.x >= _textureWidth - quarterTexture || current.y <= quarterTexture || current.y >= _textureWidth - quarterTexture))
                 scaled = random * 5;
             else
             {
@@ -483,9 +433,8 @@ public class TerrainImageGenerator : TerrainGenerator_Base
                 scaled = random * 7;
             }
 
-            // 0 -> 4.9999
             float floor = Mathf.Floor(scaled);
-            // 0 -> 4
+
             int randomDirection = (int)floor;
 
             current.direction = randomDirection;
@@ -500,18 +449,16 @@ public class TerrainImageGenerator : TerrainGenerator_Base
                 current.x += previous.x + fwdUpDiagOffsetX;
                 current.y += previous.y + fwdUpDiagOffsetY;
             }
-            else if (randomDirection == 2) // FwdDownDiag
-            {
-                current.x += previous.x + fwdDownDiagOffsetX;
-                current.y += previous.y + fwdDownDiagOffsetY;
-            }
-
-            else if (randomDirection == 3) // FWD
+            else if (randomDirection == 2) // FWD
             {
                 current.x += previous.x + fwdOffsetX;
                 current.y += previous.y + fwdOffsetY;
             }
-
+            else if (randomDirection == 3) // FwdDownDiag
+            {
+                current.x += previous.x + fwdDownDiagOffsetX;
+                current.y += previous.y + fwdDownDiagOffsetY;
+            }
             else if (randomDirection == 4) // DOWN
             {
                 current.x += previous.x - upOffsetX;
@@ -538,43 +485,320 @@ public class TerrainImageGenerator : TerrainGenerator_Base
 
         foreach (GeneratedRiverCell generatedRiverCell in generatedRiverCells)
         {
-            //for (int j = -_riverAddedWidth; j <= _riverAddedWidth; ++j)
-            //{
-            //    for (int k = -_riverAddedWidth; k <= _riverAddedWidth; ++k)
-            //    {
-            //        _modifiedTexture.SetPixel(generatedRiverCell.x + j, generatedRiverCell.y + k, _water);
-            //    }
-            //}
-
-            int riverBankPixelDistance = _riverBedWidth + _riverAddedWidth;
-
-            for (int j = -riverBankPixelDistance; j <= riverBankPixelDistance; ++j)
+            for (int j = -_riverAddedWidth; j <= _riverAddedWidth; ++j)
             {
-                for (int k = -riverBankPixelDistance; k <= riverBankPixelDistance; ++k)
+                for (int k = -_riverAddedWidth; k <= _riverAddedWidth; ++k)
                 {
-                    if (Mathf.Abs(j) <= _riverBedWidth)
-                        _modifiedTexture.SetPixel(generatedRiverCell.x + j, generatedRiverCell.y + k, _water);
-                    else if (_modifiedTexture.GetPixel(generatedRiverCell.x + j, generatedRiverCell.y + k) == _water)
-                            continue;
-                    else
-                        _modifiedTexture.SetPixel(generatedRiverCell.x + j, generatedRiverCell.y + k, _waterBank);
+                    _modifiedTexture.SetPixel(generatedRiverCell.x + j, generatedRiverCell.y + k, _water);
                 }
             }
+
+
+            // int riverBankPixelDistance = _riverBedWidth + _riverAddedWidth;
+
+            //for (int j = -riverBankPixelDistance; j <= riverBankPixelDistance; ++j)
+            //{
+            //    int xjCurrent = generatedRiverCell.x + j;
+            //    for (int k = -riverBankPixelDistance; k <= riverBankPixelDistance; ++k)
+            //    {
+            //        int ykCurrent = generatedRiverCell.y + k;
+            //        if (ykCurrent >= _textureWidth || xjCurrent >= _textureHeight || ykCurrent < 0 || xjCurrent < 0)
+            //        {
+            //            continue;
+            //        }
+            //        if (riverTexture2D.GetPixel(xjCurrent, ykCurrent) != _water)
+            //        {
+            //            if ((Mathf.Abs(j) <= _riverAddedWidth && Mathf.Abs(k) <= _riverAddedWidth))
+            //                riverTexture2D.SetPixel(xjCurrent, ykCurrent, _water);
+            //            else if (Mathf.Abs(j) > _riverAddedWidth && Mathf.Abs(k) > _riverAddedWidth)
+            //                riverTexture2D.SetPixel(xjCurrent, ykCurrent, _waterBank);
+            //            else
+            //                continue;
+            //        }
+            //        continue;
+            //    }
+            //}
+            //for (int j = -_riverAddedWidth; j <= _riverAddedWidth; ++j)
+            //{
+            //    int xjCurrent = generatedRiverCell.x + j;
+            //    for (int k = -_riverAddedWidth; k <= _riverAddedWidth; ++k)
+            //    {
+            //        int ykCurrent = generatedRiverCell.y + k;
+            //        if (ykCurrent >= _textureWidth|| xjCurrent >= _textureHeight || ykCurrent < 0 || xjCurrent < 0
+            //            || riverTexture2D.GetPixel(xjCurrent, ykCurrent) == _water)
+            //        {
+            //            continue;
+            //        }
+            //        riverTexture2D.SetPixel(xjCurrent, xjCurrent, _water);
+            //    }
+            //    // continue;
+            //}
         }
         _modifiedTexture.Apply();
 
         Debug.Log("RiverComplete");
     }
 
+    void CreateWaterBank(int kernelWidth)
+    {
+        if (kernelWidth % 2 == 0) return; // this means the number is event, ignore.
+
+        // Re-generate
+        for (int y = 0; y < _textureHeight; ++y)
+        {
+            for (int x = 0; x < _textureWidth; ++x)
+            {
+                Color pixelColor = _modifiedTexture.GetPixel(x, y);
+                if (pixelColor == _water || pixelColor == _waterBank)
+                    continue;
+
+                int yBottomRow = y - ((kernelWidth - 1) / 2);
+                int yTopRow = y + ((kernelWidth - 1) / 2);
+
+                int xLeftColumn = x - ((kernelWidth - 1) / 2);
+                int xRightColumn = x + ((kernelWidth - 1) / 2);
+
+                bool waterFound = false;
+                for (int yOffset = yBottomRow; yOffset <= yTopRow; ++yOffset)
+                {
+                    for (int xOffset = xLeftColumn; xOffset <= xRightColumn; ++xOffset)
+                    {
+                        Color offsetPixelColor = _modifiedTexture.GetPixel(xOffset, yOffset);
+                        if (offsetPixelColor == _water)
+                        {
+                            waterFound = true;
+                            _modifiedTexture.SetPixel(x, y, _waterBank);
+                            break;
+                        }
+                    }
+                    if (waterFound)
+                        break;
+                }
+            }
+        }
+        _modifiedTexture.Apply();
+    }
+
+    void CreateWaterBanks()
+    {
+        // print(_modifiedTexture.GetPixel(0, 0));
+
+        // remove all tiles that do not have neighbouring tiles of the same type.
+
+        for (int y = 0; y < _textureHeight; ++y)
+        {
+            for (int x = 0; x < _textureWidth; ++x)
+            {
+                Color pixelColor = _modifiedTexture.GetPixel(x, y);
+                if (CompareColors(_water, pixelColor) || CompareColors(_waterBank, pixelColor))
+                    continue;
+
+                bool waterFound = false;
+                // Iterates through surrounding tiles
+                for (int i = -_waterBanksWidth; i <= _waterBanksWidth; ++i)
+                {
+                    for (int j = -_waterBanksWidth; j <= _waterBanksWidth; ++j)
+                    {
+                        if (i == 0 && j == 0)
+                        {
+                            Debug.Log($"{pixelColor}   x: {x} , y: {y}");
+                            continue;
+                        }
+                        else if (x + i < 0 || x + i >= _textureWidth || y + j < 0 || y + j >= _textureHeight)
+                            continue;
+
+                        Color pixCol = _modifiedTexture.GetPixel(x + i, y + j);
+
+                        if (CompareColors(_water, pixCol))
+                        {
+                            waterFound = true;
+                            //_modifiedTexture.SetPixel(x, y, _waterBank);
+                            break;
+                        }
+                    }
+                    if (waterFound)
+                        break;
+                }
+                if (waterFound)
+                    _modifiedTexture.SetPixel(x, y, _waterBank);
+            }
+        }
+        _modifiedTexture.Apply();
+
+        Debug.Log("Water: " + _water);
+    }
+    
+    bool CompareColors(Color colorA, Color colorB)
+    {
+        if (Mathf.Round(colorA.r * 10.0f) * 0.1f == Mathf.Round(colorB.r * 10.0f) * 0.1f &&
+            Mathf.Round(colorA.g * 10.0f) * 0.1f == Mathf.Round(colorB.g * 10.0f) * 0.1f &&
+            Mathf.Round(colorA.b * 10.0f) * 0.1f == Mathf.Round(colorB.b * 10.0f) * 0.1f)
+            return true;
+        else
+            return false;
+    }
+
+    void CreateForestOffWaterBanks()
+    {
+        // print(_modifiedTexture.GetPixel(0, 0));
+
+        // remove all tiles that do not have neighbouring tiles of the same type.
+
+        for (int y = 0; y < _textureHeight; ++y)
+        {
+            for (int x = 0; x < _textureWidth; ++x)
+            {
+                Color pixelColor = _modifiedTexture.GetPixel(x, y);
+                if (CompareColors(_water, pixelColor) || CompareColors(_waterBank, pixelColor) || CompareColors(_forest, pixelColor))
+                    continue;
+
+                bool edgeFound = false;
+                // Iterates through surrounding tiles
+                for (int i = -_forestWidth; i <= _forestWidth; ++i)
+                {
+                    for (int j = -_forestWidth; j <= _forestWidth; ++j)
+                    {
+                        if (i == 0 && j == 0)
+                        {
+                            Debug.Log($"{pixelColor}   x: {x} , y: {y}");
+                            continue;
+                        }
+                        else if (x + i < 0 || x + i >= _textureWidth || y + j < 0 || y + j >= _textureHeight)
+                            continue;
+
+                        Color pixCol = _modifiedTexture.GetPixel(x + i, y + j);
+
+                        if (CompareColors(_water, pixCol) || CompareColors(_waterBank, pixCol))
+                        {
+                            edgeFound = true;
+                            //_modifiedTexture.SetPixel(x, y, _waterBank);
+                            break;
+                        }
+                    }
+                    if (edgeFound)
+                        break;
+                }
+                if (edgeFound)
+                    _modifiedTexture.SetPixel(x, y, _forest);
+            }
+        }
+
+        Debug.Log("Water: " + _waterBank);
+
+        _modifiedTexture.Apply();
+    }
+
+    protected virtual void Update()
+    {
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            _renderer.sprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
+            Debug.Log("Rendered");
+        }
+
+        _timeUntilNextGen -= Time.deltaTime;
+        if (_timeUntilNextGen > 0.0f) return;
+
+        _seed = (int)Random.Range(0, 1000000.0f);
+
+        _timeUntilNextGen = _timeBetweenGens;
+
+        _modifiedTexture = new Texture2D(_textureWidth, _textureHeight);
+        _modifiedTexture.Apply();
+
+        if (_generateBasicZones)
+        {
+            GenerateBasicZones();
+
+            Sprite basicZonesSprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
+            _renderer.sprite = basicZonesSprite;
+        }
+
+        if (_clean)
+        {
+            for (int i = 0; i < _totalRivers; i++)
+            {
+                CleanUpZones(_outerRings, _minSurroundingMatches, false);
+
+                Sprite cleanUpSprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
+                _renderer.sprite = cleanUpSprite;
+            }
+            // final clean pass
+            CleanUpZones(1, 4, true);
+        }
+
+        if (_hasRivers)
+        {
+            for (int i = 0; i < _totalRivers; i++)
+            {
+                Debug.Log("Generated River");
+                GenerateRiver(_seed + i * (int)_timeUntilNextGen);
+
+                _modifiedTexture.Apply();
+                // Note: if file exists at path, it will overwrite.
+                // _modifiedTexture = AssetCreator.SaveTexture2D(_modifiedTexture, $"{_folderPathA3}{_fileName}", true, true, true);
+                // _modifiedTexture.Apply();
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+
+                // _modifiedTexture = (Texture2D)AssetDatabase.LoadAssetAtPath($"{_folderPathA3}{_fileName}.bmp", typeof(Texture2D));
+                // _modifiedTexture.Apply();
+
+                // Note: if file exists at path, it will overwrite.
+                //_modifiedTexture = AssetCreator.CreateTexture2D(_modifiedTexture, $"{_folderPathA3}{_fileName}", _filter, _readable, _format);
+                //_modifiedTexture.Apply();
+            }
+
+            //for (int i = 0; i < 3; i++)
+            //{
+            //    // final clean pass
+            //    CleanUpZones(1, 4, true);
+            //}
+
+
+            Sprite riverSprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
+            _renderer.sprite = riverSprite;
+        }
+
+        if (_hasWaterBanks)
+        {
+            CreateWaterBanks();
+            _modifiedTexture.Apply();
+
+            Sprite waterBankSprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
+            _renderer.sprite = waterBankSprite;
+        }
+
+        if (_hasForest)
+        {
+            CreateForestOffWaterBanks();
+            //_modifiedTexture.Apply();
+
+            Sprite forestSprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
+            _renderer.sprite = forestSprite;
+        }
+
+        if (_isBlurry)
+        {
+            BlurTerrain((int)_blurStrength);
+
+            Sprite blurrySprite = Sprite.Create(_modifiedTexture, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
+            _renderer.sprite = blurrySprite;
+        }
+
+    }
 
     protected virtual void OnDisable()
     {
-        // Note: if file exists at path, it will overwrite.
-        _modifiedTexture = AssetCreator.CreateTexture2D(_modifiedTexture, $"{_folderPathA2}{_fileName}", _filter, _readable, _format);
-        _modifiedTexture.Apply();
+        return;
+        //    //// Note: if file exists at path, it will overwrite.
+        //    //_modifiedTexture = AssetCreator.SaveTexture2D(_modifiedTexture, $"{_folderPathA3}{_fileName}", true, true, true);
+        //    //_modifiedTexture.Apply();
+        //    //AssetDatabase.SaveAssets();
+        //    //AssetDatabase.Refresh();
     }
 }
-
 
 /*
  * 

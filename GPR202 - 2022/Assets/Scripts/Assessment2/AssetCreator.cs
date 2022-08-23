@@ -13,7 +13,7 @@ public static class AssetCreator
     //    return texture;
     //}
 
-    public static Texture2D GetTexture2DFromAssets(string path, bool filter = true, bool readable = true, bool format = true)
+    public static Texture2D GetTexture2DFromAssets(Texture2D texture2D, string path, bool filter = true, bool readable = true, bool format = true)
     {
         //string dirPath = "Assets/Sprites/Assessment2/";
 
@@ -24,8 +24,16 @@ public static class AssetCreator
 
         //string fullPath = $"{path}.bmp";
 
-        TextureImporter A = (TextureImporter)AssetImporter.GetAtPath(path);
-        TextureImporterPlatformSettings texSet = A.GetDefaultPlatformTextureSettings();
+        AssetDatabase.CreateAsset(texture2D, path);
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        var A = AssetImporter.GetAtPath(path) as TextureImporter;
+
+        // TextureImporter A = (TextureImporter)AssetImporter.GetAtPath(path);
+
+        var texSet = A.GetDefaultPlatformTextureSettings() as TextureImporterPlatformSettings;
 
         // DEBUGGING
         if (filter)
@@ -39,24 +47,22 @@ public static class AssetCreator
         if (format)
         {
             texSet.format = TextureImporterFormat.RGB24;
-            A.SetPlatformTextureSettings(texSet);
         }
         else
         {
             texSet.format = TextureImporterFormat.RGBA32;
-            A.SetPlatformTextureSettings(texSet);
         }
-        // A.textureCompression = TextureImporterCompression.Uncompressed;
+        A.SetPlatformTextureSettings(texSet);
 
-        AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+        string newPath = path + "1.bmp";
 
-        // AssetDatabase.Refresh();
+        AssetDatabase.CopyAsset(path, newPath);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
 
-        Texture2D texture2D1 = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        Texture2D texture2D1 = AssetDatabase.LoadAssetAtPath<Texture2D>(newPath);
 
         texture2D1.Apply();
-
-        //AssetDatabase.SaveAssets();
 
         return texture2D1;
     }
@@ -82,7 +88,6 @@ public static class AssetCreator
         File.WriteAllBytes(fullPath, bytes);
 
         AssetDatabase.SaveAssets();
-
         AssetDatabase.Refresh();
 
         TextureImporter A = (TextureImporter)AssetImporter.GetAtPath(fullPath);
@@ -107,17 +112,15 @@ public static class AssetCreator
             texSet.format = TextureImporterFormat.RGBA32;
             A.SetPlatformTextureSettings(texSet);
         }
-        // A.textureCompression = TextureImporterCompression.Uncompressed;
 
         AssetDatabase.ImportAsset(fullPath, ImportAssetOptions.ForceUpdate);
-
-        AssetDatabase.Refresh();
 
         Texture2D texture2D1 = AssetDatabase.LoadAssetAtPath<Texture2D>(fullPath);
 
         texture2D1.Apply();
 
         AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
 
         return texture2D1;
 
@@ -144,13 +147,13 @@ public static class AssetCreator
 
     */
 
-    public static void SaveTexture2D(Texture2D texture2D, string path, bool filter, bool readable, bool format)
+    public static Texture2D SaveTexture2D(Texture2D texture2D, string path, bool filter, bool readable, bool format)
     {
         var timeStamp = DateTime.Now.ToString("yyyyMMddHHmmssfff");
 
         var bytes = texture2D.EncodeToPNG();
 
-        string dirPath = "Assets/Sprites/Assessment2/";
+        string dirPath = "Assets/Sprites/Assessment3/";
 
         if (!Directory.Exists(dirPath))
         {
@@ -159,9 +162,14 @@ public static class AssetCreator
 
         Debug.Log(timeStamp);
 
-        string fullPath = $"{path}{timeStamp}.bmp";
+        string fullPath = $"{path}.bmp";
 
-        AssetDatabase.CreateAsset(texture2D, fullPath);
+        File.WriteAllBytes(fullPath, bytes);
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        // AssetDatabase.CreateAsset(texture2D, fullPath);
 
         TextureImporter A = (TextureImporter)AssetImporter.GetAtPath(fullPath);
         TextureImporterPlatformSettings texSet = A.GetDefaultPlatformTextureSettings();
@@ -190,8 +198,11 @@ public static class AssetCreator
 
         File.WriteAllBytes(fullPath, bytes);
 
+        AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
 
         Debug.Log(timeStamp);
+
+        return (Texture2D)AssetDatabase.LoadAssetAtPath(fullPath, typeof(Texture2D));
     }
 }

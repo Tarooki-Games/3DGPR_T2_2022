@@ -10,8 +10,6 @@ public class TerrainAltitudeGenerator : TerrainGenerator_Base
 
     [SerializeField] GameObject _voxelPrefab;
 
-    [SerializeField] float _clampValue = 10.0f;
-
     [SerializeField] List<GameObject> _voxels = new List<GameObject>();
 
     // 64x64 zones
@@ -21,11 +19,6 @@ public class TerrainAltitudeGenerator : TerrainGenerator_Base
 
     [SerializeField] List<ZoneInformation> _zoneInfoList = new List<ZoneInformation>();
 
-    [SerializeField] int _kernelWidthBlur = 7;
-
-    // The number of cycles of the basic noise pattern that are repeated
-    // over the width and height of the texture.
-    [SerializeField] float _noiseZoom = 1.0F;
 
     const int MIN_VOXEL_HEIGHT = -1;
 
@@ -35,11 +28,12 @@ public class TerrainAltitudeGenerator : TerrainGenerator_Base
         public float _heightScalar;
         public int _seed;
         public int _numberOfVoxelSteps;
+    // The number of cycles of the basic noise pattern that are repeated
+    // over the width and height of the texture.
         public float _noiseZoom;
     }
 
     [Header("KEY VALUES: Adjustable to Create Terrain Height Variation")]
-    [SerializeField] int _numberOfVoxelSteps = 5;
     [SerializeField] protected int _perlinNoiseScalar = 3;
     [SerializeField] protected float _heightScalar = 1.0f;
 

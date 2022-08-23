@@ -45,7 +45,7 @@ public class TerrainVoxelGenerator : TerrainImageGenerator
         {
             base.Update();
             _fileName = "Image_Voxels";
-            _modifiedTexture = AssetCreator.GetTexture2DFromAssets($"{_folderPathA3}{_fileName}");
+            _modifiedTexture = AssetCreator.GetTexture2DFromAssets(_modifiedTexture, $"{_folderPathA3}{_fileName}");
             _modifiedTexture.Apply();
         }
 
