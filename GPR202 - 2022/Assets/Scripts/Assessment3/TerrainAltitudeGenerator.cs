@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class TerrainAltitudeGenerator : TerrainGenerator_Base
@@ -9,8 +10,11 @@ public class TerrainAltitudeGenerator : TerrainGenerator_Base
     [SerializeField] protected bool _generatePerlinNoise;
 
     [SerializeField] GameObject _voxelPrefab;
+    [SerializeField] GameObject _voxelCheapPrefab;
 
     [SerializeField] List<GameObject> _voxels = new List<GameObject>();
+
+    [SerializeField] GameObject[,] _voxelsXY;
 
     // 64x64 zones
     [SerializeField] int _numberOfZones = 4;
@@ -19,8 +23,9 @@ public class TerrainAltitudeGenerator : TerrainGenerator_Base
 
     [SerializeField] List<ZoneInformation> _zoneInfoList = new List<ZoneInformation>();
 
-
     const int MIN_VOXEL_HEIGHT = -1;
+
+    [SerializeField] Texture2D _cellMap;
 
     [System.Serializable]
     public struct ZoneInformation
@@ -64,6 +69,8 @@ public class TerrainAltitudeGenerator : TerrainGenerator_Base
         _zoneHeight = _textureHeight / (_numberOfZones / 2);
 
         _heightMap = new Texture2D(_textureWidth, _textureHeight);
+
+        _voxelsXY = new GameObject[_textureWidth, _textureHeight];
     }
 
     protected void Update()
@@ -77,6 +84,7 @@ public class TerrainAltitudeGenerator : TerrainGenerator_Base
 
         GenerateVoxelHeightmap();
 
+
         BlendBoundariesOfChunks(3);
 
         //BlurBoundariesOfChunks(13);
@@ -86,16 +94,18 @@ public class TerrainAltitudeGenerator : TerrainGenerator_Base
         // BlurBoundariesOfChunks(5);
         //BlurBoundariesOfChunks(3);
 
+        if (_isGeneratingVoxels)
+            GenerateVoxelTerrain();
+
         Sprite newSprite = Sprite.Create(_heightMap, _sourceSprite.rect, new Vector2(0.5f, 0.5f));
         _renderer.sprite = newSprite;
 
-        if (_isGeneratingVoxels)
-            GenerateVoxelTerrain();
 
         print("DONE");
         // remove areas that dont have 10+ tiles (small zones).
         // change zones that shouldnt touch.
     }
+
     void GenerateVoxelHeightmap()
     {
         for (float y = 0; y < _textureHeight; ++y)
@@ -310,22 +320,56 @@ public class TerrainAltitudeGenerator : TerrainGenerator_Base
             */
         }
 
+        // Empty Out 2D Array
+        //foreach (GameObject voxel in _voxels)
+        //{
+        //    Destroy(voxel);
+        //}
+
+        for (int x = 0; x < _textureHeight; x++)
+        {
+
+            for (int y = 0; y < _textureHeight; y++)
+            {
+                Destroy(_voxelsXY[x, y]);
+            }
+        }
+
+        _voxelsXY = new GameObject[_textureWidth, _textureHeight];
+
         for (float z = 0; z < _textureHeight; ++z)
         {
             for (float x = 0; x < _textureWidth; ++x)
             {
+                ZoneInformation zoneInfo = CoordsToZoneInformation((int)x, (int)z);
+
                 float altitudeSample = _heightMap.GetPixel((int)x, (int)z).r;
 
-                //float y = altitudeSample * _heightScalar;
+                float y = altitudeSample * zoneInfo._heightScalar;
+                _voxelCheapPrefab.transform.localScale = new Vector3(_voxelCheapPrefab.transform.localScale.x, y, _voxelCheapPrefab.transform.localScale.z);
+                // GameObject voxel = Instantiate(_voxelCheapPrefab);
+                // voxel.transform.position = new Vector3(x, y, z);
 
-                for (float y = altitudeSample * _heightScalar; y >= MIN_VOXEL_HEIGHT; y -= 1)
-                {
-                    Debug.Log("?");
-                    GameObject voxel = Instantiate(_voxelPrefab);
-                    voxel.transform.position = new Vector3(x, y, z);
-                    if (y == altitudeSample * _heightScalar)
-                        _voxels.Add(voxel);
-                }
+                string cellMapPath = AssetDatabase.GetAssetPath(_cellMap);
+
+                _cellMap = (Texture2D)AssetDatabase.LoadAssetAtPath(cellMapPath, typeof(Texture2D));
+
+                Color cellColor = _cellMap.GetPixel((int)x, (int)z);
+
+                _voxelsXY[(int)x, (int)z] = Instantiate(_voxelCheapPrefab, new Vector3(x, y, z), Quaternion.identity);
+                _voxelsXY[(int)x, (int)z].GetComponentInChildren<MeshRenderer>().material.SetColor("_Color", cellColor);
+
+                //_voxels.Add(_voxelsXY[(int)x, (int)z]);
+
+                // Removed this code because it made my whole code run super slowly, too many triangles and stuff
+                // But it did layer voxels below, down to a certain point.
+                //for (float y = altitudeSample * zoneInfo._heightScalar; y >= MIN_VOXEL_HEIGHT; y -= 1)
+                //{
+                //    GameObject voxel = Instantiate(_voxelPrefab);
+                //    voxel.transform.position = new Vector3(x, y, z);
+                //    if (y == altitudeSample * zoneInfo._heightScalar)
+                //        _voxels.Add(voxel);
+                //}
             }
         }
         // sample each pixel

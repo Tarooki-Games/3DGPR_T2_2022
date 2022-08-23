@@ -787,6 +787,12 @@ public class TerrainImageGenerator : TerrainGenerator_Base
             _renderer.sprite = blurrySprite;
         }
 
+
+        // Note: if file exists at path, it will overwrite.
+        _modifiedTexture = AssetCreator.SaveTexture2D(_modifiedTexture, $"{_folderPathA3}{_fileName}", true, true, true);
+        _modifiedTexture.Apply();
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
     }
 
     protected virtual void OnDisable()

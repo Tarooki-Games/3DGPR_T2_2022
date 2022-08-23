@@ -115,6 +115,35 @@ public class TerrainVoxelGenerator : TerrainImageGenerator
         return _noiseTexture;
     }
 
+    protected Texture2D GenerateHeightMapWithZones()
+    {
+        for (float y = 0; y < _textureHeight; ++y)
+        {
+            for (float x = 0; x < _textureWidth; ++x)
+            {
+                float xCoord = _seed + x / _textureWidth * _perlinNoiseScalar;
+                float yCoord = _seed + y / _textureHeight * _perlinNoiseScalar;
+                float perlinNoise = Mathf.PerlinNoise(xCoord, yCoord);
+
+
+                perlinNoise *= _clampValue;
+                // 0 -> 10
+
+                int perlinClamped = (int)perlinNoise;
+                // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+
+                perlinNoise = perlinClamped / _clampValue;
+                // 0 -> 1.0
+                // 0.1 0.2 0.33
+
+                _noiseTexture.SetPixel((int)x, (int)y, new Color(perlinNoise, perlinNoise, perlinNoise));
+            }
+        }
+        _noiseTexture.Apply();
+
+        return _noiseTexture;
+    }
+
     void GenerateVoxelTerrain()
     {
         // delete existing voxels.
