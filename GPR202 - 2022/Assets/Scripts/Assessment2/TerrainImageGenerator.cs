@@ -668,7 +668,7 @@ public class TerrainImageGenerator : TerrainGenerator_Base
 
                         Color pixCol = _modifiedTexture.GetPixel(x + i, y + j);
 
-                        if (CompareColors(_water, pixCol) || CompareColors(_waterBank, pixCol))
+                        if (CompareColors(_waterBank, pixCol) || CompareColors(_water, pixCol))
                         {
                             edgeFound = true;
                             //_modifiedTexture.SetPixel(x, y, _waterBank);
@@ -746,8 +746,8 @@ public class TerrainImageGenerator : TerrainGenerator_Base
                 // _modifiedTexture.Apply();
 
                 // Note: if file exists at path, it will overwrite.
-                //_modifiedTexture = AssetCreator.CreateTexture2D(_modifiedTexture, $"{_folderPathA3}{_fileName}", _filter, _readable, _format);
-                //_modifiedTexture.Apply();
+                _modifiedTexture = AssetCreator.CreateTexture2D(_modifiedTexture, $"{_folderPathA3}{_fileName}", _filter, _readable, _format);
+                _modifiedTexture.Apply();
             }
 
             //for (int i = 0; i < 3; i++)

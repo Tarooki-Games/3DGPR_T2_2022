@@ -324,7 +324,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _isGlow: 0
-  _isDebug: 0
   _nRows: 3
   _effect: GAUSSIAN_BLUR
   _canvas: {fileID: 0}
@@ -686,7 +685,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _isGlow: 0
-  _isDebug: 0
   _nRows: 3
   _allowance: 5
   _intensityOnClick: 0.5
@@ -785,7 +783,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 814135006}
   m_Direction: 0
   m_MinValue: 0
-  m_MaxValue: 8
+  m_MaxValue: 12
   m_WholeNumbers: 1
   m_Value: 0
   m_OnValueChanged:
@@ -1012,7 +1010,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _isGlow: 0
-  _isDebug: 0
   _nRows: 3
   _effect: RIDGE
   _canvas: {fileID: 0}
@@ -1263,7 +1260,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _isGlow: 0
-  _isDebug: 0
   _nRows: 3
   _effect: SHARPEN
   _canvas: {fileID: 0}
@@ -1307,7 +1303,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _isGlow: 0
-  _isDebug: 0
   _nRows: 3
   _effect: BOX_BLUR
   _canvas: {fileID: 0}
@@ -1653,7 +1648,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _isGlow: 0
-  _isDebug: 0
   _nRows: 3
   secondsBetweenRenders: 0
   _frequency: 3

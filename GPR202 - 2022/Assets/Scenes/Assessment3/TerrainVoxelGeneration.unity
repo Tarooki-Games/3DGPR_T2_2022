@@ -163,27 +163,28 @@ MonoBehaviour:
   _voxelCheapPrefab: {fileID: 7148897848281614475, guid: 3ca3ba8530caf3540adb3ab929b149d2, type: 3}
   _voxels: []
   _numberOfZones: 4
-  _zoneWidth: 12
+  _zoneWidth: 124252
   _zoneHeight: 12
   _zoneInfoList:
-  - _heightScalar: 3
+  - _heightScalar: 5
     _seed: 7
     _numberOfVoxelSteps: 30
     _noiseZoom: 40
-  - _heightScalar: 7
+  - _heightScalar: 5
     _seed: 21
     _numberOfVoxelSteps: 21
     _noiseZoom: 30
-  - _heightScalar: 12
+  - _heightScalar: 5
     _seed: 12321
     _numberOfVoxelSteps: 12
     _noiseZoom: 20
-  - _heightScalar: 21
+  - _heightScalar: 5
     _seed: 7
     _numberOfVoxelSteps: 5
     _noiseZoom: 10
+  _cellMap: {fileID: 2800000, guid: 977d7bb66907e0a4bb477841ade0dd19, type: 3}
   _perlinNoiseScalar: 7
-  _heightScalar: 7
+  _heightScalar: 5
 --- !u!212 &855889474
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -268,7 +269,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1045837172
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -298,7 +299,7 @@ MonoBehaviour:
   _waterBank: {r: 0.9, g: 0.9, b: 0.5, a: 1}
   _generateBasicZones: 1
   _clean: 1
-  _isBlurry: 0
+  _isBlurry: 1
   _blurStrength: 5
   _hasRivers: 1
   _totalRivers: 3

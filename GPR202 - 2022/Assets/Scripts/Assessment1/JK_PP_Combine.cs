@@ -28,7 +28,7 @@ public class JK_PP_Combine : PP_Base
 
         if (_experiment)
         {
-            combined = Combine(redifyTexture, firstEffectTexture);
+            combined = Combine(redifyTexture, secondEffectTexture);
         }
         else
         {

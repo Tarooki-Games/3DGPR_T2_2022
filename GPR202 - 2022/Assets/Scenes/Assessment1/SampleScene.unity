@@ -385,15 +385,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68f55206731d264489dfb5eea80beaf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _sharpness: 1
+  _isGlow: 0
+  _nRows: 3
   _allowance: 10
   _intensityOnClick: 1
   _bufferIntensity: 1
   _hasHealthBar: 0
   _health: 0.5
   _amplitude: 10
-  _frequency: 1
+  _frequency: 0.2
   _movementSpeed: 1
+  _enemyIsDying: 0
+  _enemyIsDead: 0
   _lerpTime: 0.00001
 --- !u!1 &804701005
 GameObject:
@@ -425,15 +428,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68f55206731d264489dfb5eea80beaf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _sharpness: 1
+  _isGlow: 0
+  _nRows: 3
   _allowance: 10
   _intensityOnClick: 1
   _bufferIntensity: 1
   _hasHealthBar: 1
   _health: 0.5
   _amplitude: 10
-  _frequency: 1
+  _frequency: 0.2
   _movementSpeed: 1
+  _enemyIsDying: 0
+  _enemyIsDead: 0
   _lerpTime: 0.00001
 --- !u!212 &804701007
 SpriteRenderer:
@@ -476,12 +482,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: -1
-  m_Sprite: {fileID: 21300000, guid: 40b93900b1bcfbe41bdf5868406f9c86, type: 3}
+  m_Sprite: {fileID: 21300000, guid: f0dec7fc8b48e24499becd20bd50966f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 10.37, y: 7.7}
+  m_Size: {x: 0.8, y: 0.59}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -496,7 +502,7 @@ Transform:
   m_GameObject: {fileID: 804701005}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 3.04, y: 0.62, z: 0}
-  m_LocalScale: {x: 8, y: 8, z: 10}
+  m_LocalScale: {x: 4, y: 4, z: 10}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
@@ -681,7 +687,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68f55206731d264489dfb5eea80beaf0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _sharpness: 1
+  _isGlow: 0
+  _nRows: 3
   _allowance: 10
   _intensityOnClick: 1
   _bufferIntensity: 1
@@ -690,6 +697,8 @@ MonoBehaviour:
   _amplitude: 10
   _frequency: 1
   _movementSpeed: 1
+  _enemyIsDying: 0
+  _enemyIsDead: 0
   _lerpTime: 0.00001
 --- !u!212 &2137174875
 SpriteRenderer:

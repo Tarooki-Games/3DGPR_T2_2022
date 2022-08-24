@@ -102,7 +102,7 @@ public class PP_Blur : PP_Base
         // Not Sure why but the _sharpenKernel values are being changed despite me never directly assigning to them.
         // Therefore, I need to reset them to it's base value before anything else.
         _sharpenKernel = new float[3, 3] { { 0f, -1.0f, 0f, },
-                                           { -1.0f, 5, -1.0f, },
+                                           { -1.0f, 5.0f, -1.0f, },
                                            { 0f, -1.0f, 0f, }, };
 
         float[,] kernel = _sharpenKernel;

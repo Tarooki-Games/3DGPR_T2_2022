@@ -25,11 +25,11 @@ public class PP_Base : MonoBehaviour
                                                                       { 2.0f/16, 4.0f/16, 2.0f/16, },
                                                                       { 1.0f/16, 2.0f/16, 1.0f/16, }, };
     protected readonly float[,] _ridgeDetectionKernel = new float[3, 3] { { -1.0f, -1.0f, -1.0f, },
-                                                                { -1.0f, 8, -1.0f, },
+                                                                { -1.0f, 8.0f, -1.0f, },
                                                                 { -1.0f, -1.0f, -1.0f, }, };
 
     protected float[,] _sharpenKernel = new float[3, 3] { { 0f, -1.0f, 0f, },
-                                                { -1.0f, 5, -1.0f, },
+                                                { -1.0f, 5.0f, -1.0f, },
                                                 { 0f, -1.0f, 0f, }, };
 
     protected float[,] _9x9BoxBlur = new float[9, 9];
@@ -91,6 +91,8 @@ public class PP_Base : MonoBehaviour
         _sourceTexture = _sourceSprite.texture;
         _textureWidth = _sourceTexture.width;
         _textureHeight = _sourceTexture.height;
+
+        // _modifiedTexture = new Texture2D(_textureWidth, _textureHeight);
 
         // CREATING THE 9x9 BOX BLUR KERNEL
         //for (int y = 0; y < 9; y++)
@@ -185,7 +187,8 @@ public class PP_Base : MonoBehaviour
                               centreLeft + centreMiddle + centreRight +
                               bottomLeft + bottomMiddle + bottomRight;
 
-                added.a = pixel.a;
+                centreMiddle.a = 1.0f;
+                //added.a = pixel.a;
 
                 // Color averaged = (topLeft + topMiddle + topRight + 
                 //                  centreLeft + centreMiddle + centreRight + 

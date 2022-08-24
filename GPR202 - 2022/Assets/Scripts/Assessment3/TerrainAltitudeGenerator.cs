@@ -23,7 +23,7 @@ public class TerrainAltitudeGenerator : TerrainGenerator_Base
 
     [SerializeField] List<ZoneInformation> _zoneInfoList = new List<ZoneInformation>();
 
-    const int MIN_VOXEL_HEIGHT = -1;
+    // const int MIN_VOXEL_HEIGHT = -1;
 
     [SerializeField] Texture2D _cellMap;
 
@@ -253,7 +253,6 @@ public class TerrainAltitudeGenerator : TerrainGenerator_Base
                     blendTexture.SetPixel(i, y, blendedColor);
                     colorIterator++;
                 }
-
 
                 //for (int x = 0; x < _textureWidth; ++x)
                 //{
